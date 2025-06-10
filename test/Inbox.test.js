@@ -13,13 +13,22 @@ beforeEach(async () => {
   inbox = await new web3.eth.Contract(JSON.parse(interface))
     .deploy({
       data: bytecode,
-      arguments: ["Hi there!"],
+      arguments: ["Hi there!"],   // the argument is the initial message
     })
-    .send({ from: accounts[0], gas: "1000000" });
+    .send({ from: accounts[0], gas: "1000000" });  // comment out to fail BE test as contract transactions isn't sent, so no address
 });
 
 describe("Inbox", () => {
   it("deploys a contract", () => {
-    console.log(inbox);
+    assert.ok(inbox.options.address);  // asdserts the beforeEach works by attaching an address to the contract
+  });
+  it("has a default message", async () => {
+    const message = await inbox.methods.message().call();  // calls the inital message
+    assert.equal(message, "Hi there!");
+  });
+  it("can change the message", async () => {
+    await inbox.methods.setMessage("bye").send({ from: accounts[0] });  // calls the setMessage, changes it, and asserts
+    const message = await inbox.methods.message().call();
+    assert.equal(message, "bye");
   });
 });
